@@ -1,0 +1,23 @@
+{
+  "urgency": "urgent",
+  "visible_findings": [
+    "Diffuse dark brown to black pigmented area on left buccal mucosa occupying ~14.5% of visible field",
+    "Reddish background mucosa with visible vascular markings",
+    "Margins indistinct and irregular, difficult to delineate due to blur and glare",
+    "Surface appears rough and non-scrapable as per history, not fully assessable on image",
+    "No obvious ulceration or active bleeding visible in limited field of view",
+    "Heavy brown staining on visible molar teeth consistent with tobacco use",
+    "Reported burning sensation with spicy food"
+  ],
+  "risk_factors": [
+    "Chronic smokeless tobacco use - Khaini 5 times daily for 18 years",
+    "Occasional bidi smoking 2-3 per day",
+    "Persistent mucosal alteration for 6 weeks (>2 weeks threshold)",
+    "Age 48 years male with long-term tobacco exposure"
+  ],
+  "suggested_next_step": "Urgent referral to District Hospital dental / Oral Medicine OPD within 3-7 days for in-person examination, documentation and further evaluation. A licensed human clinician must examine the patient in person.",
+  "image_quality_notes": "Image is blurred and slightly out of focus with specular glare/reflection on mucosa, limited field of view partially obscured by teeth and wooden spatula, making detailed assessment of texture and margins difficult. Safe-by-design escalation warranted due to ambiguity.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "You have a change on the inside of your left cheek for the last 6 weeks with a burning feeling when eating spicy food and a rough surface. Because you have used khaini and bidi for many years, it is important to get this checked urgently by a dentist or doctor at the district hospital within a few days. This does not mean it is a serious disease, but an early in-person check is needed.",
+  "patient_summary_hi": "आपके बाएं गाल के अंदर पिछले 6 हफ्तों से बदलाव है और तीखा खाने पर जलन महसूस होती है, साथ ही सतह खुरदरी बताई गई है। आप कई वर्षों से खैनी और बीड़ी का सेवन करते हैं, इसलिए यह जरूरी है कि आप 3-7 दिनों के भीतर जिला अस्पताल में दंत चिकित्सक से इसकी जांच कराएं। इसका मतलब यह नहीं है कि यह कोई गंभीर बीमारी है, लेकिन समय पर व्यक्तिगत जांच कराना बहुत महत्वपूर्ण है।"
+}

@@ -1,0 +1,15 @@
+{
+  "age": 48,
+  "sex": "Male",
+  "anatomical_site": "Left buccal mucosa",
+  "habits": [
+    "Smokeless tobacco (Khaini) 5 times daily for 18 years",
+    "Occasional bidi smoking (2-3/day)"
+  ],
+  "lesion_duration_weeks": 6,
+  "symptoms": [
+    "Burning sensation with spicy food",
+    "Rough, non-scrapable surface texture",
+    "No spontaneous bleeding"
+  ]
+}
