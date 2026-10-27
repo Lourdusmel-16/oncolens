@@ -1,0 +1,30 @@
+# 1. CRITICAL: Never commit your API key or secrets
+.env
+*.env
+.env.local
+
+# 2. Python Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# 3. Python Bytecode and Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# 4. Large Dataset Downloads & Temporary Outputs
+*.zip
+*.tar.gz
+outputs/*.jpg
+outputs/*.png
+outputs/*.json
+!outputs/.gitkeep
+
+# 5. OS and Editor Artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
