@@ -1,0 +1,22 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "priority",
+  "visible_findings": [
+    "Dark brown to blackish pigmented area on left buccal mucosa corresponding to SAM candidate region (~9.3% of image)",
+    "Flat appearance with diffuse, ill-defined margins in this view",
+    "Surrounding buccal mucosa appears reddish-pink with visible vascular pattern and moist surface",
+    "No obvious ulceration, bleeding, or raised nodular texture visible in this image",
+    "Generalized brownish staining noted on visible lower molar teeth"
+  ],
+  "risk_factors": [
+    "Alcohol use reported",
+    "Age 45 years, male",
+    "Lesion duration reported as 0 weeks - unclear if newly noticed or longstanding, requires in-person clarification",
+    "No tobacco, gutka, khaini, supari/areca nut or bidi/smoking reported in questionnaire"
+  ],
+  "suggested_next_step": "Refer to dentist / oral medicine specialist for in-person examination of left buccal mucosa pigmentation within 1-2 weeks for documentation, history clarification and further evaluation. A licensed clinician must examine the patient in person.",
+  "image_quality_notes": "Intraoral photograph of left buccal mucosa with wooden spatula retraction, moderate clarity with some glare, moisture and slight blur, limited field of view.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "A dark coloured area is seen on the inside of the left cheek. It is not causing pain as per your report, but it should be checked in person by a dentist or doctor soon to understand it properly. Please do not worry, but do not delay the check-up.",
+  "patient_summary_hi": "बाएं गाल के अंदर एक गहरे रंग का क्षेत्र दिख रहा है। आपके अनुसार इसमें दर्द नहीं है, लेकिन इसकी सही जानकारी के लिए दंत चिकित्सक या डॉक्टर से प्रत्यक्ष जांच जल्द करवानी चाहिए। चिंता न करें, पर जांच में देरी न करें।"
+}

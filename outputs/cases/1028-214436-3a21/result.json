@@ -1,0 +1,41 @@
+{
+  "case_id": "1028-214436-3a21",
+  "quality": {
+    "is_acceptable": true,
+    "blur_score": 299.63,
+    "glare_ratio": 0.0044,
+    "issues": []
+  },
+  "image_is_intraoral": true,
+  "segmentation": {
+    "regions": [],
+    "area_ratio_all": 0.0
+  },
+  "referral": {
+    "image_is_intraoral": true,
+    "urgency": "priority",
+    "visible_findings": [
+      "Diffuse raised area on left buccal mucosa",
+      "Mucosa appears pink with localized reddish area in center",
+      "Surface appears moist and slightly irregular with some glistening",
+      "Margins appear diffuse and not sharply demarcated",
+      "Small clear fluid-filled like spot near inferior border of the raised area",
+      "No obvious deep ulceration or bleeding seen in this single photo"
+    ],
+    "risk_factors": [
+      "Age 45 years, male",
+      "Site left buccal mucosa",
+      "Habits reported as none - self-reported history needs in-person verification for khaini, gutka, supari/areca nut, bidi/smoking, alcohol",
+      "Lesion duration reported as 0 weeks - history unclear and inconsistent with visible change, needs clarification",
+      "No symptoms reported - requires direct questioning"
+    ],
+    "suggested_next_step": "Refer for in-person examination by a licensed dentist or oral medicine specialist within 7 days for detailed history, clinical examination and documentation. Re-confirm tobacco, areca nut, smoking, alcohol use and exact duration of mucosal change. A licensed clinician must examine the patient in person.",
+    "image_quality_notes": "Intraoral photograph of left buccal mucosa with retraction by blue gloved fingers, adequate illumination with some glare and saliva, focus acceptable for surface assessment but limited to single view.",
+    "confidence_note": "A human clinician must confirm all observations in person.",
+    "patient_summary_en": "A change is seen on the inside of your left cheek. It should be checked in person by a dentist or doctor within a few days. Please share your full habit history and how long this change has been present. An in-person examination is necessary.",
+    "patient_summary_hi": "आपके बाएं गाल के अंदर म्यूकोसा में बदलाव दिख रहा है। इसकी कुछ दिनों के भीतर दंत चिकित्सक या डॉक्टर से प्रत्यक्ष जांच कराना जरूरी है। कृपया अपनी आदतों और इस बदलाव की अवधि के बारे में पूरी जानकारी साथ ले जाएं। सही सलाह के लिए प्रत्यक्ष जांच जरूरी है।"
+  },
+  "urgency_llm": "priority",
+  "urgency_final": "priority",
+  "safety_flags": []
+}

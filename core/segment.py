@@ -1,124 +1,308 @@
-import os
 import base64
+import hashlib
 import json
+import os
 import re
+import time
+from typing import Any, Dict, List, Optional, Sequence
+
 import cv2
-import requests
 from dotenv import load_dotenv
-from typing import Dict, Any, List
+from meta_sam_parser import SegmentationMask, decode_mask_to_raster
+import numpy as np
+import requests
 
-# Load .env automatically whenever this module is used
+from core.utils import load_resized
+
 load_dotenv()
+
+# Box + mask token pair as emitted by sam-3.1
+RECORD_RE = re.compile(
+    r"<\|box;x1=(\d+);y1=(\d+);x2=(\d+);y2=(\d+);w=(\d+);h=(\d+)(?:;c=([\d.]+))?\|>"
+    r"<\|mask;x=\d+;y=\d+;(?:c=[\d.]+;)?data=(\d+),(\d+),([^|<>;,\"\\]+)\|>"
+)
+
+DEFAULT_CONCEPTS = ("white patch", "red patch", "ulcer")
+FALLBACK_CONCEPT = "oral lesion"
+ANATOMICAL_NEGATIVE = "tooth"  # Prompt used to identify dental structures
+
+
 class LesionSegmenter:
-    """
-    Production wrapper for Meta SAM 3.1 over the Responses API.
-    Streams token grammar, extracts bounding boxes, draws visual overlays,
-    and calculates relative lesion area ratio.
-    """
-    def __init__(self, api_key: str = None, base_url: str = "https://api.meta.ai/v1"):
-        self.api_key = api_key or os.getenv("MODEL_API_KEY")
-        if not self.api_key:
-            raise ValueError("MODEL_API_KEY is not set.")
-        self.base_url = base_url
+  """SAM 3.1 wrapper with anatomical negative filtering (teeth suppression)."""
 
-    def segment(self, image_path: str, primary_concept: str = "white patch") -> Dict[str, Any]:
-        if not os.path.exists(image_path):
-            raise FileNotFoundError(f"Image not found at '{image_path}'")
+  def __init__(
+      self,
+      api_key: Optional[str] = None,
+      base_url: str = "https://api.meta.ai/v1",
+      cache_dir: str = "outputs/cache",
+  ):
+    self.api_key = api_key or os.getenv("MODEL_API_KEY")
+    if not self.api_key:
+      raise ValueError("MODEL_API_KEY is not set.")
+    self.base_url = base_url
+    self.cache_dir = cache_dir
+    os.makedirs(cache_dir, exist_ok=True)
 
-        with open(image_path, "rb") as f:
-            b64_image = base64.b64encode(f.read()).decode("utf-8")
+  # ---------- network ----------
+  def _call_sam(
+      self, jpeg_bytes: bytes, concept: str, use_cache: bool = True
+  ) -> str:
+    key = hashlib.sha256(jpeg_bytes + concept.encode()).hexdigest()[:24]
+    cache_path = os.path.join(self.cache_dir, f"sam_{key}.txt")
+    if use_cache and os.path.exists(cache_path):
+      with open(cache_path, "r", encoding="utf-8") as f:
+        return f.read()
 
-        img = cv2.imread(image_path)
-        img_h, img_w = img.shape[:2]
-        total_pixels = img_h * img_w
+    b64 = base64.b64encode(jpeg_bytes).decode("utf-8")
+    payload = {
+        "model": "sam-3.1",
+        "input": [{
+            "type": "message",
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": concept},
+                {
+                    "type": "input_image",
+                    "image_url": f"data:image/jpeg;base64,{b64}",
+                },
+            ],
+        }],
+        "stream": True,
+        "metadata": {"include_confidence": "true", "mask_encoding": "one_bit"},
+    }
+    headers = {
+        "Authorization": f"Bearer {self.api_key}",
+        "Content-Type": "application/json",
+        "Accept": "text/event-stream",
+    }
 
-        url = f"{self.base_url}/responses"
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            "Accept": "text/event-stream",
-        }
+    last_err = None
+    for attempt in range(3):
+      try:
+        resp = requests.post(
+            f"{self.base_url}/responses",
+            headers=headers,
+            json=payload,
+            stream=True,
+            timeout=120,
+        )
+        if resp.status_code == 200:
+          break
+        last_err = f"HTTP {resp.status_code}: {resp.text[:300]}"
+        if resp.status_code not in (429, 500, 502, 503, 504):
+          raise RuntimeError(f"SAM request failed ({last_err})")
+      except requests.RequestException as e:
+        last_err = str(e)
+      time.sleep(2 * (attempt + 1))
+    else:
+      raise RuntimeError(f"SAM request failed after retries ({last_err})")
 
-        # Attempt primary concept, fallback to 'oral lesion' if no match
-        concepts_to_try = [primary_concept, "oral lesion"] if primary_concept != "oral lesion" else ["oral lesion"]
-        box_matches = []
-        matched_concept = None
+    parts: List[str] = []
+    for raw in resp.iter_lines(decode_unicode=False):
+      if not raw:
+        continue
+      line = raw.decode("utf-8", errors="replace")
+      if not line.startswith("data: "):
+        continue
+      data = line[len("data: ") :]
+      if data == "[DONE]":
+        break
+      try:
+        ev = json.loads(data)
+      except json.JSONDecodeError:
+        continue
+      if ev.get("type") == "response.output_text.delta":
+        parts.append(ev.get("delta", ""))
+      elif ev.get("type") in ("error", "response.failed", "response.incomplete"):
+        raise RuntimeError(f"SAM stream error: {data[:300]}")
 
-        for concept in concepts_to_try:
-            payload = {
-                "model": "sam-3.1",
-                "input": [
-                    {
-                        "type": "message",
-                        "role": "user",
-                        "content": [
-                            {"type": "input_text", "text": concept},
-                            {"type": "input_image", "image_url": f"data:image/jpeg;base64,{b64_image}"},
-                        ],
-                    }
-                ],
-                "stream": True,
-            }
+    text = "".join(parts)
+    if text:  # Never cache empty replies
+      with open(cache_path, "w", encoding="utf-8") as f:
+        f.write(text)
+    return text
 
-            resp = requests.post(url, headers=headers, json=payload, stream=True)
-            if resp.status_code != 200:
-                continue
+  # ---------- parsing ----------
+  @staticmethod
+  def parse_regions(
+      stream_text: str, img_w: int, img_h: int, concept: str
+  ) -> List[Dict[str, Any]]:
+    regions = []
+    for m in RECORD_RE.finditer(stream_text):
+      x1, y1, x2, y2, w, h, conf, mh, mw, payload = m.groups()
+      x1, y1, x2, y2, w, h, mh, mw = map(int, (x1, y1, x2, y2, w, h, mh, mw))
+      enc = "lossless" if payload[0] == "~" else "one_bit"
+      small = np.frombuffer(
+          decode_mask_to_raster(
+              SegmentationMask(
+                  encoding=enc, payload=payload, width=mw, height=mh
+              )
+          ),
+          dtype=np.uint8,
+      ).reshape(mh, mw)
 
-            raw_tokens = []
-            for raw_line in resp.iter_lines(decode_unicode=False):
-                if not raw_line:
-                    continue
-                line = raw_line.decode("utf-8", errors="replace")
-                if not line.startswith("data: "):
-                    continue
-                data = line.removeprefix("data: ")
-                if data == "[DONE]":
-                    break
-                try:
-                    event = json.loads(data)
-                    if event.get("type") == "response.output_text.delta":
-                        raw_tokens.append(event.get("delta", ""))
-                except json.JSONDecodeError:
-                    continue
+      # Rescale if model frame differs from original
+      sx, sy = img_w / w, img_h / h
+      full = np.zeros((img_h, img_w), dtype=np.uint8)
+      if abs(sx - 1) < 1e-6 and abs(sy - 1) < 1e-6:
+        bx1, by1 = x1, y1
+      else:
+        bx1, by1 = int(x1 * sx), int(y1 * sy)
+        small = cv2.resize(
+            small,
+            (max(1, int(mw * sx)), max(1, int(mh * sy))),
+            interpolation=cv2.INTER_NEAREST,
+        )
 
-            stream_text = "".join(raw_tokens)
-            matches = re.findall(r"<\|box;x1=(\d+);y1=(\d+);x2=(\d+);y2=(\d+);w=(\d+);h=(\d+)\|>", stream_text)
-            if matches:
-                box_matches = matches
-                matched_concept = concept
-                break
+      hh, ww = small.shape
+      ye, xe = min(img_h, by1 + hh), min(img_w, bx1 + ww)
+      full[by1:ye, bx1:xe] = small[: ye - by1, : xe - bx1]
+      regions.append({
+          "concept": concept,
+          "box": [int(x1 * sx), int(y1 * sy), int(x2 * sx), int(y2 * sy)],
+          "confidence": float(conf) if conf is not None else None,
+          "mask": full,
+          "area_px": int(full.sum()),
+      })
+    return regions
 
-        overlay = img.copy()
-        regions: List[Dict[str, int]] = []
-        total_lesion_pixels = 0
+  # ---------- public segmentation with negative filtering ----------
+  def segment(
+      self,
+      image_path: str,
+      concepts: Sequence[str] = DEFAULT_CONCEPTS,
+      site: Optional[str] = None,
+      min_confidence: float = 0.3,
+      use_cache: bool = True,
+      filter_teeth: bool = True,
+  ) -> Dict[str, Any]:
+    bgr, jpeg = load_resized(image_path)
+    img_h, img_w = bgr.shape[:2]
 
-        for i, (x1, y1, x2, y2, w, h) in enumerate(box_matches):
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-            box_area = max(0, (x2 - x1)) * max(0, (y2 - y1))
-            total_lesion_pixels += box_area
+    # 1. Negative Anatomical Mask: localize teeth
+    tooth_mask = np.zeros((img_h, img_w), dtype=np.uint8)
+    if filter_teeth:
+      tooth_text = self._call_sam(jpeg, ANATOMICAL_NEGATIVE, use_cache=use_cache)
+      teeth_regions = self.parse_regions(
+          tooth_text, img_w, img_h, concept=ANATOMICAL_NEGATIVE
+      )
+      for t in teeth_regions:
+        tooth_mask |= t["mask"]
 
-            regions.append({"x1": x1, "y1": y1, "x2": x2, "y2": y2, "area_px": box_area})
+    # 2. Context-Guided Concept Expansion (from questionnaire site)
+    target_concepts = list(concepts)
+    if site:
+      clean_site = (
+          site.lower()
+          .replace("left ", "")
+          .replace("right ", "")
+          .replace("mucosa", "")
+          .strip()
+      )
+      if clean_site and clean_site not in ("other / multiple", "oral cavity"):
+        site_concept = f"{clean_site} lesion"
+        if site_concept not in target_concepts:
+          target_concepts.insert(0, site_concept)
 
-            # Draw visual highlight for clinician reviewer view
-            cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv2.putText(
-                overlay,
-                f"SAM 3.1: {matched_concept}",
-                (x1, max(y1 - 8, 20)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.6,
-                (0, 0, 255),
-                2,
-                cv2.LINE_AA,
-            )
+    # 3. Query candidate concepts with fallback
+    candidates: List[Dict[str, Any]] = []
+    all_prompts = list(target_concepts) + [FALLBACK_CONCEPT]
 
-        area_ratio = round(float(total_lesion_pixels / total_pixels), 4)
+    for concept in all_prompts:
+      if concept == FALLBACK_CONCEPT and candidates:
+        break  # Generic fallback only runs if specific prompts found nothing
+      text = self._call_sam(jpeg, concept, use_cache=use_cache)
+      for r in self.parse_regions(text, img_w, img_h, concept):
+        if r["confidence"] is None or r["confidence"] >= min_confidence:
+          candidates.append(r)
 
-        return {
-            "has_lesion_detected": len(regions) > 0,
-            "matched_concept": matched_concept,
-            "region_count": len(regions),
-            "regions": regions,
-            "area_ratio": area_ratio,
-            "overlay_image": overlay,
-        }
+    # 4. Filter dental false positives
+    valid_regions: List[Dict[str, Any]] = []
+    has_teeth = tooth_mask.sum() > 0
+
+    for r in candidates:
+      if has_teeth:
+        overlap_px = int(np.logical_and(r["mask"], tooth_mask).sum())
+        overlap_ratio = overlap_px / max(1, r["area_px"])
+
+        # If >35% of the candidate mask sits on teeth, reject as dental artifact
+        if overlap_ratio > 0.35:
+          continue
+
+        # If it only touches teeth slightly, subtract teeth pixels from the mask
+        if overlap_px > 0:
+          cleaned_mask = r["mask"] & ~tooth_mask
+          if cleaned_mask.sum() < 50:  # Noise threshold
+            continue
+          r["mask"] = cleaned_mask
+          r["area_px"] = int(cleaned_mask.sum())
+
+      valid_regions.append(r)
+
+    for i, r in enumerate(valid_regions):
+      r["id"] = i
+
+    return {
+        "image_bgr": bgr,
+        "regions": valid_regions,
+        "img_w": img_w,
+        "img_h": img_h,
+        "teeth_detected": bool(has_teeth),
+    }
+
+  # ---------- reviewer helpers ----------
+  @staticmethod
+  def area_ratio(
+      regions: List[Dict[str, Any]],
+      selected_ids: Optional[Sequence[int]] = None,
+  ) -> float:
+    """True pixel area of the UNION of selected masks (no double counting)."""
+    chosen = [
+        r for r in regions if selected_ids is None or r["id"] in selected_ids
+    ]
+    if not chosen:
+      return 0.0
+    union = np.zeros_like(chosen[0]["mask"], dtype=np.uint8)
+    for r in chosen:
+      union |= r["mask"]
+    return round(float(union.sum()) / union.size, 4)
+
+  @staticmethod
+  def render_overlay(
+      bgr: np.ndarray,
+      regions: List[Dict[str, Any]],
+      selected_ids: Optional[Sequence[int]] = None,
+  ) -> np.ndarray:
+    out = bgr.copy()
+    palette = {
+        "white patch": (0, 215, 255),
+        "red patch": (0, 0, 255),
+        "ulcer": (255, 0, 255),
+        "oral lesion": (0, 255, 0),
+        "lesion": (0, 255, 0),
+    }
+    for r in regions:
+      if selected_ids is not None and r["id"] not in selected_ids:
+        continue
+      color = palette.get(r["concept"], (0, 255, 0))
+      m = r["mask"].astype(bool)
+      tint = out.copy()
+      tint[m] = color
+      out = cv2.addWeighted(tint, 0.35, out, 0.65, 0)
+      cnts, _ = cv2.findContours(
+          r["mask"], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+      )
+      cv2.drawContours(out, cnts, -1, color, 2)
+      x1, y1, _, _ = r["box"]
+      conf = f" {r['confidence']:.2f}" if r["confidence"] is not None else ""
+      cv2.putText(
+          out,
+          f"#{r['id']} {r['concept']}{conf}",
+          (x1, max(y1 - 6, 16)),
+          cv2.FONT_HERSHEY_SIMPLEX,
+          0.5,
+          color,
+          2,
+          cv2.LINE_AA,
+      )
+    return out

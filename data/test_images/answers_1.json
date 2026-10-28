@@ -11,5 +11,13 @@
     "Burning sensation with spicy food",
     "Rough, non-scrapable surface texture",
     "No spontaneous bleeding"
-  ]
+  ],
+  "red_flags": {
+    "non_healing_ulcer": false,
+    "bleeding": false,
+    "neck_lump": false,
+    "hard_or_fixed": false,
+    "numbness": false,
+    "difficulty_opening_mouth": false
+  }
 }

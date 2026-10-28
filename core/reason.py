@@ -1,153 +1,134 @@
 import os
-import base64
 import json
+import base64
 import hashlib
 from typing import List, Literal, Dict, Any, Optional
+
 from pydantic import BaseModel, Field
 from openai import OpenAI
 from dotenv import load_dotenv
 
+from core.utils import load_resized
+
 load_dotenv()
 
+
 class ReferralOutput(BaseModel):
-    urgency: Literal["routine", "priority", "urgent"] = Field(
-        description="Triage urgency based on habit risk, duration (>2 weeks), and visual features."
-    )
-    visible_findings: List[str] = Field(
-        description="Objective visual characteristics (color, margins, texture, site). No formal histology diagnosis."
-    )
-    risk_factors: List[str] = Field(
-        description="Identified carcinogen exposures (e.g. smokeless tobacco, bidi, areca nut duration)."
-    )
-    suggested_next_step: str = Field(
-        description="Actionable clinical recommendation (e.g. 'Specialist dental examination and biopsy within 2 weeks')."
-    )
-    image_quality_notes: str = Field(
-        description="Lighting, focus, or positioning limitations noted by the model."
-    )
-    confidence_note: str = Field(
-        description="Explicit clinical limitation statement reminding that a human clinician must confirm."
-    )
-    patient_summary_en: str = Field(
-        description="Clear, non-alarming explanation in simple English for the patient."
-    )
-    patient_summary_hi: str = Field(
-        description="Clear, non-alarming explanation in conversational Hindi for the patient."
-    )
+    image_is_intraoral: bool = Field(default=True, description="False if not an intraoral photo.")
+    urgency: Literal["routine", "priority", "urgent"]
+    visible_findings: List[str]
+    risk_factors: List[str]
+    suggested_next_step: str
+    image_quality_notes: str
+    confidence_note: str
+    patient_summary_en: str
+    patient_summary_hi: str
+
+
+SYSTEM_PROMPT = (
+    "You are a clinical decision-support copilot for frontline community health workers "
+    "and district dentists in India. "
+    "You document oral mucosal findings and assist referral triage.\n"
+    "CRITICAL RULES:\n"
+    "1. You do NOT diagnose. Never write the words cancer, carcinoma, malignant, benign, tumour or precancer.\n"
+    "2. Objectively describe visible features only: color, margins, ulceration, texture, anatomical location.\n"
+    "3. Assess risk factors: khaini, gutka, supari/areca nut, bidi/smoking, alcohol, lesion duration.\n"
+    "4. Any persistent mucosal change (>2 weeks) in a chronic tobacco/areca user MUST be 'priority' or 'urgent'.\n"
+    "5. If evidence is ambiguous, escalate urgency (safe-by-design). Never answer 'routine' for a visible lesion.\n"
+    "6. Always state that a licensed clinician must examine the patient in person.\n"
+    "7. If the photo is not an intraoral photo, set image_is_intraoral to false.\n"
+    "8. Reply STRICTLY with one JSON object, no markdown, matching:\n"
+    "{\n"
+    '  "image_is_intraoral": true | false,\n'
+    '  "urgency": "routine" | "priority" | "urgent",\n'
+    '  "visible_findings": ["..."],\n'
+    '  "risk_factors": ["..."],\n'
+    '  "suggested_next_step": "...",\n'
+    '  "image_quality_notes": "...",\n'
+    '  "confidence_note": "A human clinician must confirm all observations in person.",\n'
+    '  "patient_summary_en": "Simple, respectful, non-alarming English.",\n'
+    '  "patient_summary_hi": "Simple, respectful Hindi in Devanagari."\n'
+    "}"
+)
+
+
+def _extract_json(text: str) -> str:
+    text = text.strip()
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end == -1 or end < start:
+        raise ValueError("No JSON object found in model reply")
+    return text[start:end + 1]
+
 
 class ClinicalReasoner:
-    def __init__(self, model_name: str = "muse-spark-1.1", cache_dir: str = "outputs/cache"):
+    def __init__(self, model_name: Optional[str] = None, cache_dir: str = "outputs/cache"):
         self.api_key = os.getenv("MODEL_API_KEY")
         if not self.api_key:
             raise ValueError("MODEL_API_KEY is not set.")
-        
-        self.client = OpenAI(
-            base_url="https://api.meta.ai/v1",
-            api_key=self.api_key,
-        )
-        self.model_name = model_name
+        self.model_name = model_name or os.getenv("REASONER_MODEL", "muse-spark-1.1")
+        if "contributor" in self.model_name:
+            # Contributor-mode models use inputs/outputs for training: never send patient photos there.
+            raise ValueError("Use a Standard-mode model (not '-contributor') for clinical images.")
+        self.client = OpenAI(base_url="https://api.meta.ai/v1", api_key=self.api_key)
         self.cache_dir = cache_dir
-        os.makedirs(self.cache_dir, exist_ok=True)
+        os.makedirs(cache_dir, exist_ok=True)
 
-    def _generate_cache_key(self, image_bytes: bytes, questionnaire: Dict[str, Any]) -> str:
-        content = image_bytes + json.dumps(questionnaire, sort_keys=True).encode("utf-8")
-        return hashlib.sha256(content).hexdigest()
+    def _cache_key(self, jpeg: bytes, questionnaire: Dict[str, Any], seg: Optional[Dict[str, Any]]) -> str:
+        blob = (jpeg + json.dumps(questionnaire, sort_keys=True).encode()
+                + json.dumps(seg or {}, sort_keys=True).encode())
+        return hashlib.sha256(blob + self.model_name.encode()).hexdigest()
 
-    def reason(
-        self,
-        image_path: str,
-        questionnaire: Dict[str, Any],
-        segment_info: Optional[Dict[str, Any]] = None,
-        use_cache: bool = True
-    ) -> ReferralOutput:
-        if not os.path.exists(image_path):
-            raise FileNotFoundError(f"Image not found: '{image_path}'")
+    def reason(self, image_path: str, questionnaire: Dict[str, Any],
+               segment_info: Optional[Dict[str, Any]] = None,
+               use_cache: bool = True) -> ReferralOutput:
+        _, jpeg = load_resized(image_path)
+        seg_summary = None
+        if segment_info:
+            seg_summary = {"region_count": segment_info.get("region_count", 0),
+                           "area_ratio": segment_info.get("area_ratio", 0.0)}
 
-        with open(image_path, "rb") as f:
-            image_bytes = f.read()
-            b64_image = base64.b64encode(image_bytes).decode("utf-8")
-
-        cache_key = self._generate_cache_key(image_bytes, questionnaire)
-        cache_path = os.path.join(self.cache_dir, f"{cache_key}.json")
-
+        cache_path = os.path.join(self.cache_dir, f"{self._cache_key(jpeg, questionnaire, seg_summary)}.json")
         if use_cache and os.path.exists(cache_path):
-            print(f"[*] Loaded cached referral reasoning from: {cache_path}")
             with open(cache_path, "r", encoding="utf-8") as f:
                 return ReferralOutput.model_validate_json(f.read())
 
-        print(f"[*] Calling Meta Model API ({self.model_name}) for clinical referral synthesis...")
-
         area_note = ""
-        if segment_info and segment_info.get("has_lesion_detected"):
-            area_note = (
-                f"\nSAM 3.1 lesion segmentation identified {segment_info.get('region_count', 0)} region(s) "
-                f"occupying approximately {segment_info.get('area_ratio', 0)*100:.1f}% of the visible image."
-            )
+        if seg_summary and seg_summary["region_count"] > 0:
+            area_note = (f"\nSAM 3.1 proposed {seg_summary['region_count']} candidate region(s) covering about "
+                         f"{seg_summary['area_ratio']*100:.1f}% of the image (a reviewer will confirm them).")
+        elif seg_summary is not None:
+            area_note = "\nSAM 3.1 found no candidate regions (this does NOT mean the mouth is normal)."
 
-        system_prompt = (
-            "You are a clinical decision-support copilot for frontline community health workers and district dentists in India. "
-            "You document oral mucosal findings and assist in referral triage. "
-            "CRITICAL RULES:\n"
-            "1. You do NOT diagnose (e.g. do not say 'the patient has Oral Cancer' or 'this is benign').\n"
-            "2. Objectively describe visible features: color, margins, ulceration, plaque texture, and anatomical location.\n"
-            "3. Assess risk factors: chewing khaini, gutka, supari, bidi smoking, alcohol, and lesion duration.\n"
-            "4. Triage rule: any persistent mucosal alteration (>2 weeks) in a chronic tobacco/areca nut user MUST be triaged as 'priority' or 'urgent'.\n"
-            "5. If visual evidence is ambiguous, escalate urgency (safe-by-design).\n"
-            "6. Always state a licensed human clinician must examine the patient in person.\n"
-            "7. Reply STRICTLY with a JSON object matching this schema:\n"
-            "{\n"
-            '  "urgency": "routine" | "priority" | "urgent",\n'
-            '  "visible_findings": ["finding 1", "finding 2"],\n'
-            '  "risk_factors": ["habit 1", "duration factor"],\n'
-            '  "suggested_next_step": "e.g. District hospital dental review within 10 days",\n'
-            '  "image_quality_notes": "notes on glare, focus, or field of view",\n'
-            '  "confidence_note": "A human clinician must confirm all observations in person.",\n'
-            '  "patient_summary_en": "Simple, respectful, non-alarming explanation in English.",\n'
-            '  "patient_summary_hi": "Simple, respectful explanation in Hindi (Devanagari script)."\n'
-            "}"
-        )
-
-        user_content = (
-            f"Patient Clinical Questionnaire:\n"
+        user_text = (
+            "Patient questionnaire:\n"
             f"- Age: {questionnaire.get('age', 'Unknown')}\n"
             f"- Sex: {questionnaire.get('sex', 'Unknown')}\n"
-            f"- Anatomical Site: {questionnaire.get('anatomical_site', 'Oral cavity')}\n"
-            f"- Habits: {', '.join(questionnaire.get('habits', ['None reported']))}\n"
-            f"- Lesion Duration: {questionnaire.get('lesion_duration_weeks', 'Unknown')} weeks\n"
-            f"- Reported Symptoms: {', '.join(questionnaire.get('symptoms', ['None']))}\n"
-            f"{area_note}\n\n"
-            f"Analyze this intraoral image alongside the clinical questionnaire and produce the structured referral JSON."
+            f"- Site: {questionnaire.get('anatomical_site', 'Oral cavity')}\n"
+            f"- Habits: {', '.join(questionnaire.get('habits') or ['None reported'])}\n"
+            f"- Lesion duration: {questionnaire.get('lesion_duration_weeks', 'Unknown')} weeks\n"
+            f"- Symptoms: {', '.join(questionnaire.get('symptoms') or ['None'])}\n"
+            f"{area_note}\n\nAnalyze the image with the questionnaire and return the referral JSON."
         )
+        b64 = base64.b64encode(jpeg).decode("utf-8")
 
-        response = self.client.chat.completions.create(
-            model=self.model_name,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": user_content},
-                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"}},
-                    ],
-                },
-            ],
-            temperature=0.1,
-        )
-
-        raw_text = response.choices[0].message.content.strip()
-
-        # Clean Markdown fences
-        if raw_text.startswith("```"):
-            raw_text = raw_text.split("\n", 1)[1]
-        if raw_text.endswith("```"):
-            raw_text = raw_text.rsplit("\n", 1)[0]
-        raw_text = raw_text.strip()
-
-        # Validate with Pydantic
-        referral = ReferralOutput.model_validate_json(raw_text)
-
-        # Cache response
-        with open(cache_path, "w", encoding="utf-8") as f:
-            f.write(referral.model_dump_json(indent=2))
-
-        return referral
+        last_err = None
+        for _ in range(2):  # one retry on malformed JSON
+            resp = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": [
+                        {"type": "text", "text": user_text},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
+                    ]},
+                ],
+                temperature=0.1,
+            )
+            try:
+                referral = ReferralOutput.model_validate_json(_extract_json(resp.choices[0].message.content))
+                with open(cache_path, "w", encoding="utf-8") as f:
+                    f.write(referral.model_dump_json(indent=2))
+                return referral
+            except Exception as e:  # noqa: BLE001
+                last_err = e
+        raise RuntimeError(f"Model returned invalid JSON twice: {last_err}")

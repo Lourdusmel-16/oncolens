@@ -1,0 +1,24 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "urgent",
+  "visible_findings": [
+    "Left buccal mucosa visible with mixed reddish and whitish coloration",
+    "Surface appears rough and irregular, reported as non-scrapable in questionnaire",
+    "Margins appear diffuse and not sharply demarcated in this view",
+    "No obvious ulceration or active bleeding visible in this image",
+    "Generalized brownish staining of teeth consistent with tobacco use",
+    "Mucosa appears moist with vascular markings visible"
+  ],
+  "risk_factors": [
+    "Smokeless tobacco (Khaini) 5 times daily for 18 years",
+    "Occasional bidi smoking 2-3 per day",
+    "Persistent mucosal change duration 6 weeks (>2 weeks)",
+    "Burning sensation with spicy food reported",
+    "Age 48 years male"
+  ],
+  "suggested_next_step": "Urgent referral to dentist / oral medicine specialist for in-person clinical examination within a few days to one week. Advise tobacco cessation counseling and avoidance of irritants. A licensed clinician must examine the patient in person.",
+  "image_quality_notes": "Intraoral image of left buccal mucosa but blurry and slightly out of focus with glare and uneven lighting. Field of view is limited, retractor partially visible. Fine details of texture and margins are not fully clear.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "You have a rough area on the inside of your left cheek that has been there for 6 weeks and causes burning with spicy food. Because you use khaini and bidi for many years, it is important to get it checked soon by a dentist or doctor. Please do not worry, but please visit within a few days. A licensed clinician must examine you in person.",
+  "patient_summary_hi": "आपके बाएं गाल के अंदर पिछले 6 हफ्तों से एक खुरदुरा बदलाव है जिससे तीखा खाने पर जलन होती है। आप लंबे समय से खैनी और बीड़ी का उपयोग करते हैं, इसलिए इसे जल्द ही दंत चिकित्सक या डॉक्टर से जांच कराना जरूरी है। कृपया चिंता न करें, लेकिन कुछ दिनों के भीतर जांच के लिए जाएं। एक लाइसेंस प्राप्त चिकित्सक को व्यक्तिगत रूप से आपकी जांच करनी चाहिए।"
+}

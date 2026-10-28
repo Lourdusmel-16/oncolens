@@ -1,0 +1,23 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "urgent",
+  "visible_findings": [
+    "Mixed whitish and reddish patch on left buccal mucosa covering a localized area",
+    "Irregular margins with rough, textured, non-scrapable surface appearance",
+    "No obvious ulceration or active bleeding visible in the image",
+    "Surrounding buccal mucosa appears erythematous with visible vascular markings",
+    "Heavy brownish staining and deposits noted on visible lower molars"
+  ],
+  "risk_factors": [
+    "Smokeless tobacco (Khaini) 5 times daily for 18 years",
+    "Occasional bidi smoking 2-3 per day",
+    "Persistent mucosal change for 6 weeks (>2 weeks)",
+    "Burning sensation with spicy food reported",
+    "Age 48 years, male"
+  ],
+  "suggested_next_step": "Urgent referral to dentist / oral medicine specialist for in-person clinical examination within 7 days. A licensed clinician must examine the patient in person to confirm observations and plan further evaluation. Counsel on cessation of khaini and bidi use.",
+  "image_quality_notes": "Intraoral photograph of left buccal mucosa with moderate blur and saliva glare, uneven lighting, retracted with wooden spatula. Mucosal area is visible but fine detail is limited.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "You have a whitish-reddish patch inside your left cheek that has been present for 6 weeks and causes burning with spicy food. Because of your long-term tobacco use, this needs to be checked soon by a dentist or doctor in person. Please do not worry, but do not delay the visit and try to avoid tobacco.",
+  "patient_summary_hi": "आपके बाएं गाल के अंदर सफेद-लाल रंग का धब्बा है जो 6 हफ्ते से है और मसालेदार खाने से जलन होती है। आप लंबे समय से खैनी और बीड़ी का सेवन करते हैं, इसलिए इसकी जांच जल्द ही किसी दंत चिकित्सक या डॉक्टर से प्रत्यक्ष रूप से करवाना जरूरी है। चिंता न करें, लेकिन जांच में देरी न करें और तंबाकू से बचने की कोशिश करें।"
+}

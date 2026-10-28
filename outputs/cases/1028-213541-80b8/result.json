@@ -1,0 +1,41 @@
+{
+  "case_id": "1028-213541-80b8",
+  "quality": {
+    "is_acceptable": false,
+    "blur_score": 67.55,
+    "glare_ratio": 0.0505,
+    "issues": [
+      "Image is out of focus (sharpness 67.6 < 100.0). Hold the camera steady and retake."
+    ]
+  },
+  "image_is_intraoral": true,
+  "segmentation": {
+    "regions": [],
+    "area_ratio_all": 0.0
+  },
+  "referral": {
+    "image_is_intraoral": true,
+    "urgency": "priority",
+    "visible_findings": [
+      "Diffuse dark brown to blackish pigmented area on left buccal mucosa with ill-defined margins",
+      "Mucosa appears moist and smooth with reddish vascular pattern visible superiorly",
+      "No clear ulceration or raised white plaque discernible in this image",
+      "Brownish discoloration/staining noted on visible molar teeth",
+      "Wooden spatula/retractor visible at lower border retracting cheek"
+    ],
+    "risk_factors": [
+      "No tobacco, areca nut/supari, bidi/smoking, or alcohol use reported in questionnaire",
+      "Lesion duration reported as 0 weeks per questionnaire",
+      "Age 45 years, male",
+      "Dental staining observed - to be correlated clinically"
+    ],
+    "suggested_next_step": "Refer for in-person examination by a licensed dentist or oral medicine specialist within 1-2 weeks for evaluation of pigmented area on left buccal mucosa. Bring questionnaire and this image. A human clinician must confirm all observations in person.",
+    "image_quality_notes": "Intraoral image of left buccal mucosa with slight blur and uneven lighting and some glare. Cheek retracted with wooden spatula. Mucosa and teeth are visible but fine detail is limited.",
+    "confidence_note": "A human clinician must confirm all observations in person.",
+    "patient_summary_en": "A dark coloured area is seen on the inside of your left cheek. You reported no pain and no tobacco habit. This should still be checked soon by a dentist or doctor in person to confirm what it is. Please avoid tobacco, gutka, supari and smoking, and keep the mouth clean.",
+    "patient_summary_hi": "आपके बाएं गाल के अंदर गहरे भूरे-काले रंग का क्षेत्र दिखाई दे रहा है। आपने दर्द नहीं बताया है और तंबाकू की आदत नहीं बताई है, फिर भी इसकी जांच के लिए जल्द ही किसी दंत चिकित्सक या डॉक्टर से व्यक्तिगत रूप से मिलें। तंबाकू, गुटखा, सुपारी और बीड़ी से बचें। डॉक्टर को स्वयं मुंह की जांच करनी होगी।"
+  },
+  "urgency_llm": "priority",
+  "urgency_final": "priority",
+  "safety_flags": []
+}
