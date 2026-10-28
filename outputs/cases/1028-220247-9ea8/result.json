@@ -1,0 +1,39 @@
+{
+  "case_id": "1028-220247-9ea8",
+  "quality": {
+    "is_acceptable": true,
+    "blur_score": 237.2,
+    "glare_ratio": 0.0009,
+    "issues": []
+  },
+  "image_is_intraoral": true,
+  "segmentation": {
+    "regions": [],
+    "area_ratio_all": 0.0
+  },
+  "referral": {
+    "image_is_intraoral": true,
+    "urgency": "urgent",
+    "visible_findings": [
+      "Large raised lobulated swelling involving lower labial mucosa / lower lip, extending across midline toward left side",
+      "Color predominantly pink to pale pink with focal yellowish-white areas",
+      "Surface texture irregular, pebbly/bumpy, shiny and moist with small pinpoint reddish spots",
+      "Broad-based attachment, margins appear diffuse and not sharply demarcated in this view",
+      "Upper lip and anterior teeth partially visible in background; reported site was left buccal mucosa but image shows lower lip region"
+    ],
+    "risk_factors": [
+      "Reported lesion duration 2 weeks - persistent mucosal change",
+      "Age 45 years, male sex",
+      "No tobacco, areca nut/supari, bidi/smoking, gutka/khaini, or alcohol habits reported in questionnaire - self-reported, needs in-person verification",
+      "Discrepancy between reported site (left buccal mucosa) and photographed site (lower labial mucosa) requires clarification"
+    ],
+    "suggested_next_step": "Urgent in-person evaluation by a licensed dentist or oral medicine specialist within 2-3 days for complete clinical examination, measurement, and documentation. SAM 3.1 finding of no candidate regions does not rule out a mucosal change. A licensed clinician must examine the patient in person.",
+    "image_quality_notes": "Close-up intraoral view centered on lower lip/labial mucosa with adequate lighting, moderate sharpness, some surface glare and moisture reflection, limited view of surrounding mucosa.",
+    "confidence_note": "A human clinician must confirm all observations in person.",
+    "patient_summary_en": "There is a large raised, bumpy area on the inside of your lower lip that has been present for 2 weeks. This needs prompt checking by a dentist or doctor in person. Please visit a clinic within a few days and carry this photo with you.",
+    "patient_summary_hi": "आपके निचले होंठ के अंदर एक बड़ा उभरा हुआ, ऊबड़-खाबड़ हिस्सा है जो 2 हफ्ते से बना हुआ है। इसकी जाँच जल्द से जल्द दंत चिकित्सक या डॉक्टर से सामने मिलकर करवाना ज़रूरी है। कृपया कुछ दिनों के अंदर क्लिनिक जाएँ और यह फोटो साथ ले जाएँ।"
+  },
+  "urgency_llm": "urgent",
+  "urgency_final": "urgent",
+  "safety_flags": []
+}
