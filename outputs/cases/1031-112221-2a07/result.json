@@ -1,0 +1,41 @@
+{
+  "case_id": "1031-112221-2a07",
+  "quality": {
+    "is_acceptable": true,
+    "blur_score": 237.2,
+    "glare_ratio": 0.0009,
+    "issues": []
+  },
+  "image_is_intraoral": true,
+  "segmentation": {
+    "regions": [],
+    "area_ratio_all": 0.0,
+    "teeth_detected": true,
+    "tooth_area_ratio": 0.0209
+  },
+  "referral": {
+    "image_is_intraoral": true,
+    "urgency": "urgent",
+    "visible_findings": [
+      "Large exophytic lobulated swelling involving lower labial mucosa / lower lip, extending across midline, occupying most of the visible lower lip area",
+      "Color pink to pale pink with focal yellowish-white areas and small reddish spots",
+      "Surface texture irregular, bumpy/pebbly, moist and glistening",
+      "Broad-based attachment, margins not sharply demarcated in this view",
+      "No frank ulceration or active bleeding seen in this image, but surface appears uneven",
+      "Upper lip and anterior teeth partially visible; left buccal mucosa as reported not clearly visualized in this view"
+    ],
+    "risk_factors": [
+      "No tobacco, areca nut/supari, gutka, khaini, bidi/smoking, or alcohol habits reported in questionnaire",
+      "Lesion duration unknown - persistence beyond 2 weeks cannot be ruled out",
+      "Age 45 years, male sex"
+    ],
+    "suggested_next_step": "Urgent referral to district dentist / oral medicine specialist or ENT for in-person clinical examination and further evaluation. SAM finding of no candidate regions does not rule out a lesion. A licensed clinician must examine the patient in person.",
+    "image_quality_notes": "Close-up view centered on lower lip/labial mucosa with adequate focus and lighting on the swelling, but limited field of view. Left buccal mucosa not clearly seen, no full mouth retraction, and background details limited.",
+    "confidence_note": "A human clinician must confirm all observations in person.",
+    "patient_summary_en": "There is a large swelling seen on your lower lip that needs prompt checking by a specialist doctor in person. Please do not worry, but it is important to go for referral soon. A licensed clinician must examine you in person.",
+    "patient_summary_hi": "आपके निचले होंठ पर एक बड़ी सूजन दिखाई दे रही है, जिसकी जल्द से जल्द विशेषज्ञ डॉक्टर से सीधे जाँच करवाना ज़रूरी है। कृपया चिंता न करें, लेकिन रेफरल के लिए जल्दी जाएं। डॉक्टर को खुद देखकर जाँच करनी होगी।"
+  },
+  "urgency_llm": "urgent",
+  "urgency_final": "urgent",
+  "safety_flags": []
+}

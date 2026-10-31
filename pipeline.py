@@ -1,9 +1,8 @@
-"""End-to-end service + CLI.  python pipeline.py [image] [answers.json]"""
+"""End-to-end service + CLI: python pipeline.py [image] [answers.json]"""
 import os
 import sys
 import json
 from typing import Any, Dict, List
-
 import cv2
 import numpy as np
 
@@ -11,7 +10,6 @@ from core.quality import ImageQualityGate
 from core.segment import LesionSegmenter
 from core.reason import ClinicalReasoner
 from core.safety import apply_safety
-
 
 def process_case(case_id: str, image_path: str, questionnaire: Dict[str, Any],
                  out_root: str = "outputs/cases", verbose: bool = True) -> Dict[str, Any]:
@@ -26,10 +24,12 @@ def process_case(case_id: str, image_path: str, questionnaire: Dict[str, Any],
     site = questionnaire.get("anatomical_site")
     seg = LesionSegmenter().segment(image_path, site=site)
     regions: List[Dict[str, Any]] = seg["regions"]
+
     meta = []
-    for r in regions:  # masks go to disk as PNGs so the reviewer UI can toggle them later
+    for r in regions:
         cv2.imwrite(os.path.join(folder, f"region_{r['id']}.png"), r["mask"] * 255)
         meta.append({k: r[k] for k in ("id", "concept", "box", "confidence", "area_px")})
+
     cv2.imwrite(os.path.join(folder, "resized.jpg"), seg["image_bgr"])
     area_all = LesionSegmenter.area_ratio(regions)
     cv2.imwrite(os.path.join(folder, "overlay.jpg"),
@@ -44,26 +44,26 @@ def process_case(case_id: str, image_path: str, questionnaire: Dict[str, Any],
         "case_id": case_id,
         "quality": {k: quality[k] for k in ("is_acceptable", "blur_score", "glare_ratio", "issues")},
         "image_is_intraoral": referral.image_is_intraoral,
-        "segmentation": {"regions": meta, "area_ratio_all": area_all},
+        "segmentation": {"regions": meta, "area_ratio_all": area_all,
+                         "teeth_detected": seg.get("teeth_detected", False),
+                         "tooth_area_ratio": seg.get("tooth_area_ratio", 0.0)},
         "referral": safe["referral"],
         "urgency_llm": safe["urgency_llm"],
         "urgency_final": safe["urgency_final"],
         "safety_flags": safe["flags"],
     }
+
     with open(os.path.join(folder, "result.json"), "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
     return result
 
-
 def load_regions(case_id: str, result: Dict[str, Any], out_root: str = "outputs/cases") -> List[Dict[str, Any]]:
-    """Rebuild region dicts (with masks) from disk for the reviewer tab."""
     folder = os.path.join(out_root, case_id)
     regions = []
     for m in result["segmentation"]["regions"]:
         mask = cv2.imread(os.path.join(folder, f"region_{m['id']}.png"), cv2.IMREAD_GRAYSCALE)
         regions.append({**m, "mask": (mask > 127).astype(np.uint8)})
     return regions
-
 
 if __name__ == "__main__":
     img = sys.argv[1] if len(sys.argv) > 1 else "data/test_images/sample1.jpeg"

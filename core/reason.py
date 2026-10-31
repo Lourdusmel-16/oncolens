@@ -3,15 +3,12 @@ import json
 import base64
 import hashlib
 from typing import List, Literal, Dict, Any, Optional
-
 from pydantic import BaseModel, Field
 from openai import OpenAI
 from dotenv import load_dotenv
-
 from core.utils import load_resized
 
 load_dotenv()
-
 
 class ReferralOutput(BaseModel):
     image_is_intraoral: bool = Field(default=True, description="False if not an intraoral photo.")
@@ -24,11 +21,9 @@ class ReferralOutput(BaseModel):
     patient_summary_en: str
     patient_summary_hi: str
 
-
 SYSTEM_PROMPT = (
     "You are a clinical decision-support copilot for frontline community health workers "
-    "and district dentists in India. "
-    "You document oral mucosal findings and assist referral triage.\n"
+    "and district dentists in India. You document oral mucosal findings and assist referral triage.\n"
     "CRITICAL RULES:\n"
     "1. You do NOT diagnose. Never write the words cancer, carcinoma, malignant, benign, tumour or precancer.\n"
     "2. Objectively describe visible features only: color, margins, ulceration, texture, anatomical location.\n"
@@ -37,7 +32,7 @@ SYSTEM_PROMPT = (
     "5. If evidence is ambiguous, escalate urgency (safe-by-design). Never answer 'routine' for a visible lesion.\n"
     "6. Always state that a licensed clinician must examine the patient in person.\n"
     "7. If the photo is not an intraoral photo, set image_is_intraoral to false.\n"
-    "8. Reply STRICTLY with one JSON object, no markdown, matching:\n"
+    "8. Reply STRICTLY with one JSON object, no markdown, using exactly these keys:\n"
     "{\n"
     '  "image_is_intraoral": true | false,\n'
     '  "urgency": "routine" | "priority" | "urgent",\n'
@@ -51,14 +46,12 @@ SYSTEM_PROMPT = (
     "}"
 )
 
-
 def _extract_json(text: str) -> str:
     text = text.strip()
     start, end = text.find("{"), text.rfind("}")
     if start == -1 or end == -1 or end < start:
         raise ValueError("No JSON object found in model reply")
     return text[start:end + 1]
-
 
 class ClinicalReasoner:
     def __init__(self, model_name: Optional[str] = None, cache_dir: str = "outputs/cache"):
@@ -67,7 +60,6 @@ class ClinicalReasoner:
             raise ValueError("MODEL_API_KEY is not set.")
         self.model_name = model_name or os.getenv("REASONER_MODEL", "muse-spark-1.1")
         if "contributor" in self.model_name:
-            # Contributor-mode models use inputs/outputs for training: never send patient photos there.
             raise ValueError("Use a Standard-mode model (not '-contributor') for clinical images.")
         self.client = OpenAI(base_url="https://api.meta.ai/v1", api_key=self.api_key)
         self.cache_dir = cache_dir
@@ -99,20 +91,22 @@ class ClinicalReasoner:
         elif seg_summary is not None:
             area_note = "\nSAM 3.1 found no candidate regions (this does NOT mean the mouth is normal)."
 
+        dur = questionnaire.get("lesion_duration_weeks")
+        dur_txt = "unknown (patient is not sure)" if dur is None else f"{dur} weeks"
         user_text = (
             "Patient questionnaire:\n"
             f"- Age: {questionnaire.get('age', 'Unknown')}\n"
             f"- Sex: {questionnaire.get('sex', 'Unknown')}\n"
             f"- Site: {questionnaire.get('anatomical_site', 'Oral cavity')}\n"
             f"- Habits: {', '.join(questionnaire.get('habits') or ['None reported'])}\n"
-            f"- Lesion duration: {questionnaire.get('lesion_duration_weeks', 'Unknown')} weeks\n"
+            f"- Lesion duration: {dur_txt}\n"
             f"- Symptoms: {', '.join(questionnaire.get('symptoms') or ['None'])}\n"
             f"{area_note}\n\nAnalyze the image with the questionnaire and return the referral JSON."
         )
-        b64 = base64.b64encode(jpeg).decode("utf-8")
 
+        b64 = base64.b64encode(jpeg).decode("utf-8")
         last_err = None
-        for _ in range(2):  # one retry on malformed JSON
+        for _ in range(2):
             resp = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[
@@ -129,6 +123,7 @@ class ClinicalReasoner:
                 with open(cache_path, "w", encoding="utf-8") as f:
                     f.write(referral.model_dump_json(indent=2))
                 return referral
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 last_err = e
+
         raise RuntimeError(f"Model returned invalid JSON twice: {last_err}")
