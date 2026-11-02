@@ -1,0 +1,23 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "priority",
+  "visible_findings": [
+    "Lower labial mucosa / labial vestibule visible with fingers everting lower lip - reported site in questionnaire is left buccal mucosa, location discrepancy noted",
+    "Diffuse reddish background with prominent fine vascular pattern",
+    "Multiple vertical linear whitish-yellowish streaks and patches on lower portion of visible mucosa",
+    "Mucosal surface appears moist with slightly uneven texture and light reflection",
+    "No large ulceration clearly seen in this view, small focal surface irregularities present",
+    "Lower anterior teeth partially visible at top with dark staining/calculus"
+  ],
+  "risk_factors": [
+    "Age 45 years, male",
+    "Lesion duration unknown - patient not sure",
+    "Habits reported as none in questionnaire - requires in-person confirmation",
+    "No symptoms reported, absence of symptoms does not exclude need for evaluation"
+  ],
+  "suggested_next_step": "Refer for in-person examination by a licensed dentist or oral medicine specialist within 1-2 weeks. Carry this image and questionnaire. A licensed clinician must examine the patient in person to confirm observations, clarify habit history and duration, and decide further care.",
+  "image_quality_notes": "Intraoral close-up of everted lower lip held by fingers. Moderate focus, some glare and saliva reflection on mucosa, fingers partially obscure lower border. Adequate to appreciate color and texture changes.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "A change in colour and texture is seen inside the lower lip area. It should be checked soon by a dentist or doctor in person. Please visit a clinic within a week or two and do not apply any medicine by yourself.",
+  "patient_summary_hi": "Neeche ke hoth ke andar rang aur banawat me badlav dikhai de raha hai. Iski janch ke liye jald hi dant ke doctor ya doctor se vyaktigat roop se milen. Ek-do hafte ke andar clinic jayen aur apne aap koi dawai na lagayen."
+}

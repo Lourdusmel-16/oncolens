@@ -1,0 +1,23 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "priority",
+  "visible_findings": [
+    "Left buccal mucosa visible with retraction by wooden spatulas, lower molars partially visible",
+    "Mucosal color predominantly pink with a faint, diffuse pale/whitish area in the mid buccal region",
+    "Margins of the lighter area are indistinct and blend with surrounding mucosa",
+    "No obvious ulceration, bleeding, or raised mass seen in this single view",
+    "Surface texture appears mostly smooth and moist with visible vascular markings"
+  ],
+  "risk_factors": [
+    "Age 45 years, male",
+    "Site of concern reported as left buccal mucosa",
+    "Lesion duration unknown - patient is not sure, requires in-person clarification",
+    "Habits reported as none, but tobacco, areca nut/supari, gutka, khaini, bidi, smoking and alcohol use should be re-confirmed in person",
+    "No symptoms reported, but absence of symptoms does not rule out need for examination"
+  ],
+  "suggested_next_step": "Refer for in-person examination by a dentist or oral medicine specialist for detailed evaluation of left buccal mucosa, thorough habit history, and documentation with additional views if needed. A licensed clinician must examine the patient in person to confirm observations and plan further care.",
+  "image_quality_notes": "Single intraoral view of left buccal mucosa with retraction. Lighting is adequate, focus is slightly soft, field of view is limited to part of buccal mucosa. No additional views available for comparison. Automated region detection found no candidate regions, which does not mean the mouth is normal.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "A slight change in color is seen on the inside of your left cheek. It is not possible to tell more from this photo alone. Please visit a dentist or doctor in person soon for a proper check-up. Please do not worry, but do not delay the visit.",
+  "patient_summary_hi": "Aapke baayein gaal ke andar halke rang ka badlaav dikhai de raha hai. Sirf is photo se adhik batana sambhav nahi hai. Kripya jald hi dentist ya doctor se milkar apni jaanch kara lein. Chinta na karein, lekin jaanch mein deri na karein."
+}

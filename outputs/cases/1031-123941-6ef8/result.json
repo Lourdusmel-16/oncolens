@@ -1,0 +1,45 @@
+{
+  "case_id": "1031-123941-6ef8",
+  "quality": {
+    "is_acceptable": false,
+    "blur_score": 67.55,
+    "glare_ratio": 0.0505,
+    "issues": [
+      "Image is out of focus (sharpness 67.6 < 100.0). Hold the camera steady and retake."
+    ]
+  },
+  "image_is_intraoral": true,
+  "segmentation": {
+    "regions": [],
+    "area_ratio_all": 0.0,
+    "teeth_detected": true,
+    "tooth_area_ratio": 0.254
+  },
+  "referral": {
+    "image_is_intraoral": true,
+    "urgency": "priority",
+    "visible_findings": [
+      "Left buccal mucosa visible with reddish-pink mucosal background",
+      "Multiple areas of brownish-black discoloration/pigmentation on the buccal mucosa with diffuse, ill-defined margins",
+      "Mucosal surface appears moist with light reflections and glare",
+      "No distinct ulceration or clearly raised surface change identifiable in this single view",
+      "Lower posterior teeth visible with brownish staining and deposits",
+      "Wooden spatula/retractor visible at lower border partially obscuring view"
+    ],
+    "risk_factors": [
+      "Age 45 years, male",
+      "Site: left buccal mucosa",
+      "Lesion duration unknown as per questionnaire",
+      "Habits reported as none, but brown dental staining noted - detailed history of khaini, gutka, supari/areca nut, bidi/smoking, alcohol needs re-verification in person",
+      "No symptoms reported but duration unknown"
+    ],
+    "suggested_next_step": "Priority referral to a licensed dentist or oral medicine specialist for in-person examination of left buccal mucosa within 1-2 weeks. Re-elicit detailed habit history, duration, and obtain clearer, well-lit intraoral photos. A licensed clinician must examine the patient in person to confirm findings and decide further care.",
+    "image_quality_notes": "Single intraoral view with some blur and glare from light reflection, limited focus, partial obstruction by wooden retractor, and only one angle of left buccal mucosa visible.",
+    "confidence_note": "A human clinician must confirm all observations in person.",
+    "patient_summary_en": "There is some color change seen on the inside of your left cheek. This should be checked in person by a dentist or doctor soon, within a week or two. Please do not worry, but do not delay the check-up. A licensed clinician must examine you in person.",
+    "patient_summary_hi": "आपके बाएं गाल के अंदर रंग में कुछ बदलाव दिख रहा है। इसकी जांच के लिए एक-दो हफ्ते के अंदर दंत चिकित्सक या डॉक्टर से प्रत्यक्ष मिलना जरूरी है। कृपया चिंता न करें, लेकिन जांच के लिए समय पर जरूर जाएं।"
+  },
+  "urgency_llm": "priority",
+  "urgency_final": "priority",
+  "safety_flags": []
+}

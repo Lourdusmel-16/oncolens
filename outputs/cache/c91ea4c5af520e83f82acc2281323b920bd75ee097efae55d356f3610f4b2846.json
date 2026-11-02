@@ -1,0 +1,21 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "priority",
+  "visible_findings": [
+    "Dorsal surface of tongue visible with diffuse yellowish-white coating covering central and posterior area",
+    "Coating appears thick with slightly rough texture",
+    "Anterior tip and lateral borders of tongue show pink mucosa with visible papillae",
+    "No ulceration or bleeding clearly seen in this view",
+    "Left buccal mucosa as reported in questionnaire is not visible in this image"
+  ],
+  "risk_factors": [
+    "No tobacco, areca nut, smoking or alcohol habits reported in questionnaire",
+    "Lesion duration reported as unknown",
+    "Age 45 years, male"
+  ],
+  "suggested_next_step": "A licensed clinician must examine the patient in person. Refer promptly to dentist or medical officer for direct examination of the tongue coating and for thorough evaluation of the left buccal mucosa which is not seen in this photo. Advise to bring this image and questionnaire.",
+  "image_quality_notes": "Image shows dorsal tongue only with partial view of upper incisors. Lighting is uneven with some glare. Left buccal mucosa not captured so reported site cannot be assessed. Focus is adequate for tongue surface but field of view is limited.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "The photo shows a yellowish coating on the top of your tongue. The inside of your left cheek that you mentioned is not seen in this photo. This should be checked in person by a dentist or doctor soon. Please visit the clinic with this photo.",
+  "patient_summary_hi": "Photo mein jeebh ke upar peeli-safed parat dikh rahi hai. Aapne baayein gaal ke andar ki jagah batayi thi, woh is photo mein nahi dikh rahi hai. Kripya jaldi dentist ya doctor se milkar seedhe jaanch karayein. Yeh photo saath le jayein."
+}

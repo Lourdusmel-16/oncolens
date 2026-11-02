@@ -1,0 +1,21 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "priority",
+  "visible_findings": [
+    "Left buccal mucosa shows multiple small yellowish-white raised spots arranged in clusters",
+    "Granular texture with diffuse distribution across the buccal mucosa",
+    "Background mucosa appears pink with no visible ulceration or bleeding in captured area",
+    "Margins of the small spots are discrete but overall area of involvement is diffuse",
+    "Lower molars visible with dark discoloration on occlusal surfaces"
+  ],
+  "risk_factors": [
+    "No tobacco, gutka, khaini, supari/areca nut, bidi/smoking, or alcohol habits reported as per questionnaire",
+    "Lesion duration unknown - patient is not sure",
+    "Age 45 years, male"
+  ],
+  "suggested_next_step": "Refer for in-person examination by a dentist or oral medicine specialist for evaluation of left buccal mucosal changes. A licensed clinician must examine the patient in person to confirm observations and decide further care.",
+  "image_quality_notes": "Intraoral photograph of left buccal mucosa with retraction, adequate focus and lighting on mucosa, mild glare present but mucosal details are visible",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "Small light-colored spots are seen on the inside of your left cheek. This should be checked in person by a dentist or doctor soon to understand it properly. There is no need to worry, but an in-person check is important.",
+  "patient_summary_hi": "Aapke baayein gaal ke andar chhote halke rang ke daane dikhai de rahe hain. Iski sahi jaanch ke liye kripya jaldi dentist ya doctor se saamne se mil kar dikwa lein. Ghabrane ki baat nahi hai, lekin saamne se dekhna zaroori hai."
+}

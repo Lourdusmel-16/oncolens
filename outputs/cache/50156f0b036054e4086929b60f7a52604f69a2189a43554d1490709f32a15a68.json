@@ -1,0 +1,23 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "urgent",
+  "visible_findings": [
+    "Large raised lobulated mucosal change occupying most of the lower lip, covering about one quarter of image area",
+    "Color predominantly pink with pale yellowish-white areas and scattered small reddish spots",
+    "Surface irregular, bumpy and nodular, moist and shiny with small raised yellowish nodules",
+    "Margins irregular, elevated and well-defined from surrounding lip tissue",
+    "Upper lip, lower teeth and commissures partially visible; no large ulceration clearly seen in this view"
+  ],
+  "risk_factors": [
+    "Age 45 years, male",
+    "Site: lip",
+    "Lesion duration reported as 1 week - short duration but large visible change",
+    "No tobacco, areca nut, smoking or alcohol habits reported in questionnaire - to be re-confirmed in person",
+    "No symptoms reported despite large size"
+  ],
+  "suggested_next_step": "Urgent referral to dentist / oral medicine specialist for in-person examination within a few days. A licensed clinician must examine the patient in person to assess the lower lip change and plan further evaluation.",
+  "image_quality_notes": "Close-up frontal view of lips with adequate lighting and focus on lower lip; main raised area clearly visible; mild glare on upper lip but does not obscure primary finding.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "You have a large raised area on your lower lip that has been there for about a week. This needs to be checked promptly by a dentist or doctor in person. Please visit the clinic soon and show this information.",
+  "patient_summary_hi": "आपके निचले होंठ पर एक बड़ा उभरा हुआ हिस्सा दिख रहा है जो लगभग एक हफ्ते से है। इसकी जल्द से जल्द किसी दंत चिकित्सक या डॉक्टर से व्यक्तिगत रूप से जाँच कराना जरूरी है। कृपया जल्दी क्लिनिक जाएँ और यह जानकारी साथ ले जाएँ।"
+}

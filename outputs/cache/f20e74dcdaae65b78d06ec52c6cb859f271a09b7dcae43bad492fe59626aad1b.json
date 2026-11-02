@@ -1,0 +1,24 @@
+{
+  "image_is_intraoral": true,
+  "urgency": "urgent",
+  "visible_findings": [
+    "Diffuse whitish plaque on left buccal mucosa with irregular, poorly defined margins",
+    "Mixed reddish-pink areas within and adjacent to the whitish area",
+    "Brownish discoloration overlying part of the whitish area",
+    "Mucosal surface appears moist with specular reflection and slightly textured surface",
+    "Adjacent teeth show brown staining and deposits at the edge of the frame"
+  ],
+  "risk_factors": [
+    "Age 45 years, male",
+    "Site: left buccal mucosa",
+    "Lesion duration: unknown as per patient",
+    "Self-reported habits: none reported - requires in-person verification",
+    "Dental staining visible in image - tobacco/areca use to be re-checked in person",
+    "No symptoms reported"
+  ],
+  "suggested_next_step": "Escalate for in-person evaluation by a licensed dentist or oral medicine specialist promptly (within 1-2 weeks). Re-verify detailed history of khaini, gutka, supari/areca nut, bidi/smoking, alcohol and exact lesion duration. Document with additional views and advise to avoid any tobacco/areca use if present. A licensed clinician must examine the patient in person to confirm findings and decide next steps.",
+  "image_quality_notes": "Close-up intraoral view of left buccal mucosa retracted with wooden spatulas. Moderate focus with bright specular highlights and glare on mucosa. Single view only, limited orientation. SAM 3.1 finding no candidate regions does not rule out a mucosal change.",
+  "confidence_note": "A human clinician must confirm all observations in person.",
+  "patient_summary_en": "There is a light-coloured patch with some redness seen on the inside of your left cheek. It is good you came for check-up. This needs to be examined in person by a dentist or doctor soon. Please do not rub or self-treat it and carry this photo and your details to the clinic.",
+  "patient_summary_hi": "आपके बाएं गाल के अंदर हल्के सफेद रंग का धब्बा दिख रहा है, जिसमें कुछ लालिमा भी है। यह अच्छी बात है कि आप जांच के लिए आए। इसकी जल्द ही दंत चिकित्सक या डॉक्टर से आमने-सामने जांच कराना जरूरी है। कृपया इसे रगड़ें नहीं और कोई खुद से दवा न लगाएं, इस फोटो को साथ लेकर क्लिनिक जाएं।"
+}

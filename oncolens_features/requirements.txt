@@ -1,0 +1,10 @@
+openai>=1.50
+python-dotenv
+requests
+opencv-python-headless
+numpy
+pandas
+pydantic>=2
+pillow
+streamlit>=1.40
+meta-sam-parser>=0.1.0

@@ -3,7 +3,9 @@ import io
 import glob
 import json
 import shutil
+import urllib.parse
 import cv2
+import pandas as pd
 import streamlit as st
 
 from core import store
@@ -12,6 +14,8 @@ from core.segment import LesionSegmenter
 from pipeline import process_case, load_regions
 from core.fhir_export import build_bundle
 from core.slip import slip_html
+from core import safety as safety_rules
+from core.safety_cases import run_matrix
 
 st.set_page_config(page_title="OncoLens", layout="wide", page_icon="🔬")
 
@@ -49,7 +53,8 @@ st.caption("Oral Mucosal Documentation & Referral Copilot for Frontline Health W
 st.warning("Prototype for demonstration. It assists documentation and triage only and does not diagnose. "
            "Do not upload real patient photos.")
 
-tab_field, tab_review = st.tabs(["📲 Field (ASHA / ANM)", "👨‍⚕️ Reviewer (District Dentist)"])
+tab_field, tab_review, tab_dash, tab_evidence = st.tabs(
+    ["📲 Field (ASHA / ANM)", "👨‍⚕️ Reviewer (District Dentist)", "📊 Dashboard", "🛡️ Safety & Evidence"])
 
 # ----------------- FIELD TAB -----------------
 with tab_field:
@@ -100,11 +105,15 @@ with tab_field:
         st.markdown("**Clinical Red Flags (Check all that apply):**")
         red = {k: st.checkbox(label, key=f"rf_{k}") for k, label in RED_FLAGS.items()}
         extra = st.text_input("Other symptoms or medical notes (optional)")
+        consent = st.checkbox("The patient (or guardian) agreed to a photo being taken and reviewed by a dentist",
+                              key="consent_cb")
         submitted = st.form_submit_button("💾 Save Case to Offline Queue")
 
         if submitted:
             if img_bytes is None:
                 st.error("Please provide an intraoral photo before saving.")
+            elif not consent:
+                st.error("Consent is required: tick the consent box before saving.")
             elif not gate_ok:
                 st.error("Please retake the photo or confirm 'Submit anyway'.")
             else:
@@ -115,6 +124,7 @@ with tab_field:
                     "lesion_duration_weeks": weeks,
                     "symptoms": symptoms or ["None reported"],
                     "red_flags": red,
+                    "consent": True,
                 }
                 cid = store.new_case(img_bytes, questionnaire)
                 st.success(f"Case #{cid} saved to offline queue. Ready for sync.")
@@ -221,6 +231,13 @@ with tab_review:
             st.markdown("**Hindi Summary (Devanagari - मरीज़ के लिए संदेश):**")
             st.success(ref['patient_summary_hi'])
 
+        wa_text = ref["patient_summary_en"] + "\n\n" + ref["patient_summary_hi"]
+        _fu = store.get_followup(cid)
+        if _fu:
+            wa_text += f"\n\nPlease visit the district hospital dentist by {_fu['due_date']}."
+        st.link_button("Share patient summary on WhatsApp", "https://wa.me/?text=" + urllib.parse.quote(wa_text))
+        st.caption("Sends text only (no photo, no name). Check the message before sending.")
+
         with st.expander("🛡️ Clinical Safety Rule & Guardrail Audit"):
             st.write(res.get("safety_flags") or ["Standard clinical screening rules."])
             st.caption(ref.get("confidence_note", "Clinician must confirm in person."))
@@ -279,6 +296,25 @@ PATIENT SUMMARY (HINDI):
                     st.rerun()
 
         st.divider()
+        st.subheader("🔁 Referral follow-up")
+        fu = store.get_followup(cid)
+        if not fu:
+            st.info("Sign the case above to open its follow-up record.")
+        else:
+            overdue = store.is_overdue(fu)
+            msg = f"Status: {fu['status'].replace('_', ' ')}  |  Due by: {fu['due_date']}" + ("  |  OVERDUE" if overdue else "")
+            (st.error if overdue else st.info)(msg)
+            with st.form(f"fu_form_{cid}"):
+                new_status = st.selectbox("Update status", store.FOLLOWUP_STATUSES,
+                                          index=store.FOLLOWUP_STATUSES.index(fu["status"]))
+                outcome = st.text_input("Outcome note (optional)", value=fu.get("outcome_note") or "")
+                if st.form_submit_button("Update follow-up"):
+                    store.set_followup(cid, new_status, outcome)
+                    st.rerun()
+        with st.expander("🧾 Activity log for this case"):
+            st.dataframe(pd.DataFrame(store.get_audit(cid)), hide_index=True)
+
+        st.divider()
         with st.expander("🗑️ Manage / Reset Case History"):
             col_d1, col_d2 = st.columns(2)
             with col_d1:
@@ -294,3 +330,93 @@ PATIENT SUMMARY (HINDI):
                     store.clear_all_cases()
                     st.success("Queue completely cleared.")
                     st.rerun()
+
+# ----------------- DASHBOARD TAB -----------------
+with tab_dash:
+    st.subheader("Programme dashboard")
+    all_cases = store.list_cases()
+    if not all_cases:
+        st.info("No cases yet. Save a case in the Field tab to see the dashboard.")
+    else:
+        n_pending = sum(c["status"] == "pending" for c in all_cases)
+        n_wait = sum(c["status"] == "processed" for c in all_cases)
+        n_signed = sum(c["status"] == "reviewed" for c in all_cases)
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Total cases", len(all_cases))
+        m2.metric("Waiting to sync", n_pending)
+        m3.metric("Awaiting dentist", n_wait)
+        m4.metric("Signed off", n_signed)
+
+        urg = {"routine": 0, "priority": 0, "urgent": 0}
+        for c in all_cases:
+            if c["review"]:
+                urg[c["review"]["final_urgency"]] += 1
+            elif c["result"]:
+                urg[c["result"]["urgency_final"]] += 1
+        st.markdown("**Cases by urgency** (clinician decision where signed, otherwise system triage)")
+        st.bar_chart(pd.Series(urg, name="cases"))
+
+        fus = store.list_followups()
+        st.markdown("**Referral follow-up**")
+        if not fus:
+            st.caption("No referrals yet. Follow-up starts when a dentist signs a case.")
+        else:
+            by_status = {s: sum(f["status"] == s for f in fus) for s in store.FOLLOWUP_STATUSES}
+            f1, f2, f3, f4, f5 = st.columns(5)
+            f1.metric("Referred", by_status["referred"])
+            f2.metric("Attended", by_status["attended"])
+            f3.metric("No-show", by_status["no_show"])
+            f4.metric("Closed", by_status["closed"])
+            n_over = sum(store.is_overdue(f) for f in fus)
+            f5.metric("Overdue", n_over)
+            if n_over:
+                st.error("Overdue referrals (still 'referred' after the due date):")
+                st.dataframe(pd.DataFrame([f for f in fus if store.is_overdue(f)])[["case_id", "due_date", "updated"]],
+                             hide_index=True)
+
+        st.markdown("**Recent activity**")
+        st.dataframe(pd.DataFrame(store.get_audit(limit=15)), hide_index=True)
+
+# ----------------- SAFETY & EVIDENCE TAB -----------------
+with tab_evidence:
+    st.subheader("How urgency is decided")
+    st.markdown(
+        "1. The AI (Muse Spark) suggests an urgency from the photo and questionnaire.\n"
+        "2. **Fixed safety rules** set a minimum urgency from the answers. The AI can raise urgency, never lower it.\n"
+        "3. The final urgency is the higher of the two.\n"
+        "4. A dentist signs every case. Lowering urgency below the system triage needs a written note.\n"
+        "5. The tool documents and triages. It never diagnoses; diagnostic words are removed automatically.")
+
+    st.subheader("Live safety test")
+    rows = run_matrix()
+    passed = sum(r["passed"] for r in rows)
+    (st.success if passed == len(rows) else st.error)(f"{passed} of {len(rows)} scenarios passed")
+    st.dataframe(pd.DataFrame(rows).rename(columns={"scenario": "Scenario", "ai_said": "AI said", "expected": "Expected",
+                                                    "got": "Result", "passed": "Pass"}), hide_index=True)
+
+    st.subheader("Safety rules in force")
+    st.markdown(
+        f"- Risk habit (tobacco, areca, smoking, alcohol) with a change lasting {safety_rules.PERSISTENT_WEEKS} weeks or more: "
+        "at least **priority**\n"
+        "- Duration unknown (\"Not sure\") with a risk habit: at least **priority**\n"
+        "- Any single warning sign: at least **priority**\n"
+        f"- Change lasting {safety_rules.URGENT_WEEKS} weeks or more with a warning sign, or two or more warning signs: **urgent**\n"
+        "- No region found by SAM with a risk habit: never treated as routine\n"
+        f"- Follow-up due dates (days): {store.DUE_DAYS}")
+    st.caption("These thresholds are a prototype policy and need confirmation by a clinician.")
+
+    st.subheader("Evaluation results")
+    eval_path = "data/evaluation.csv"
+    if os.path.exists(eval_path):
+        st.dataframe(pd.read_csv(eval_path), hide_index=True)
+    else:
+        st.info("Add your evaluation table as data/evaluation.csv to show it here. Columns: image, source, label, "
+                "sam_prompt, region_quality, teeth_excluded, triage, notes.")
+
+    st.subheader("Limitations")
+    st.markdown(
+        "- SAM 3.1 may miss diffuse lesions that have no clear border; \"no region\" never means normal.\n"
+        "- Lesion area is relative (% of the image), not millimetres.\n"
+        "- Small test set and no clinical validation yet.\n"
+        "- Safety thresholds and Hindi text need review by clinicians and native speakers.\n"
+        "- Prototype: do not upload real patient photos.")

@@ -1,0 +1,41 @@
+{
+  "case_id": "1031-122953-cb01",
+  "quality": {
+    "is_acceptable": false,
+    "blur_score": 2453.66,
+    "glare_ratio": 0.6922,
+    "issues": [
+      "Excessive flash/saliva glare (69.2% of image). Tilt the camera slightly and retake."
+    ]
+  },
+  "image_is_intraoral": false,
+  "segmentation": {
+    "regions": [],
+    "area_ratio_all": 0.0,
+    "teeth_detected": false,
+    "tooth_area_ratio": 0.0
+  },
+  "referral": {
+    "image_is_intraoral": false,
+    "urgency": "priority",
+    "visible_findings": [
+      "No intraoral mucosa, teeth, gums, or buccal mucosa visible in provided image",
+      "Image shows a computer screen displaying bar charts labeled Figure 1 and Figure 2 with text about model performance",
+      "No color, margin, ulceration, or texture of oral tissue can be assessed from this image"
+    ],
+    "risk_factors": [
+      "No tobacco, khaini, gutka, supari/areca nut, bidi/smoking, or alcohol habits reported in questionnaire",
+      "Lesion duration reported as unknown - requires clarification in person",
+      "Reported site is left buccal mucosa with no symptoms reported - needs direct examination",
+      "Age 45 years, male"
+    ],
+    "suggested_next_step": "Provided image is not an intraoral photo and cannot be used for triage. Please retake a clear, well-lit intraoral photograph of left buccal mucosa with cheek retracted and arrange prompt in-person examination by a licensed clinician. A human clinician must examine the patient in person.",
+    "image_quality_notes": "Image is a screenshot of a desktop browser showing graphs and text, not an intraoral photograph. No oral cavity is visible, so focus, lighting, and framing for mucosal assessment are not evaluable.",
+    "confidence_note": "A human clinician must confirm all observations in person.",
+    "patient_summary_en": "The photo shared does not show the inside of the mouth, so the area on the left cheek could not be checked. Please visit the clinic soon for an in-person examination and a proper mouth photo. A clinician will check you directly.",
+    "patient_summary_hi": "आपके द्वारा साझा की गई फोटो में मुंह के अंदर का हिस्सा नहीं दिख रहा है, इसलिए बाएं गाल वाली जगह की जांच नहीं हो पाई। कृपया जल्द ही क्लिनिक में जाकर डॉक्टर से व्यक्तिगत रूप से जांच कराएं और मुंह की सही फोटो ली जाएगी।"
+  },
+  "urgency_llm": "priority",
+  "urgency_final": "priority",
+  "safety_flags": []
+}
